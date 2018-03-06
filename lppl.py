@@ -468,21 +468,24 @@ def draw_multi_steps(results, all_data, prediction_term):
     plt.bar(keys, vs)
     plt.show()
 
-
 MAX_ERROR = 10.0
 MUTATION_RANGE = 0.2
 NUM_TOP_PERFORMERS = 10
 
-ticker = 'AAPL'
-start_date = datetime.datetime(2014, 7, 1)
-end_date = datetime.datetime(2015, 4, 3)
-learning_end_date = datetime.datetime(2014, 4, 3)
-max_term = 60
-min_term = 20
-prediction_term = 2
-generations = 10
-verbose = False
+def main():
+    ticker = 'AAPL'
+    start_date = datetime.datetime(2014, 7, 1)
+    end_date = datetime.datetime(2015, 4, 3)
+    learning_end_date = datetime.datetime(2015, 4, 3)
+    max_term = 60
+    min_term = 20
+    prediction_term = 2
+    generations = 10
+    verbose = False
 
 
-#single_step(ticker, start_date, end_date, learning_end_date, max_term, min_term, generations, verbose)
-multi_steps(ticker, start_date, end_date, max_term, min_term, prediction_term, generations, verbose)
+    single_step(ticker, start_date, end_date, learning_end_date, max_term, min_term, generations, verbose)
+    # multi_steps(ticker, start_date, end_date, max_term, min_term, prediction_term, generations, verbose)
+
+if __name__ == '__main__':
+    main()
