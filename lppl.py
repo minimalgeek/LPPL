@@ -5,7 +5,7 @@ import random
 import datetime
 import numpy as np
 import scipy.optimize as opt
-import pandas.io.data as web
+from pandas_datareader import data, wb
 import matplotlib.pyplot as plt
 
 
@@ -82,7 +82,7 @@ class chromosomes:
             # evaluate MSE with the parameter set and the LPPL function
             fitness = error_func(self.parameters)
             if self.verbose:
-              print "Initial fitness: {:f}".format(fitness)
+              print("Initial fitness: {:f}".format(fitness))
             # when initial fitness exceeds MAX_ERROR, immediately returns False
             if fitness >= MAX_ERROR:
               return False
@@ -101,7 +101,7 @@ class chromosomes:
             self.message = opt.tnc.RCSTRINGS[rc]
             self.fitness = error_func(self.parameters)
             if self.verbose:
-              print "Reult          : {:f}".format(self.fitness)
+              print("Result          : {:f}".format(self.fitness))
         except:
             return False
 
@@ -114,7 +114,7 @@ class chromosomes:
         new_parameters = list(self.parameters) # copy
         # decide a crossover point
         c = random.randint(1, self.number_of_parameters-1)
-        for i in xrange(c, self.number_of_parameters):
+        for i in range(c, self.number_of_parameters):
             new_parameters[i] = another.parameters[i]
         # return a new evaluated chromosomes
         return chromosomes(self.limits, new_parameters, self.verbose)
@@ -122,7 +122,7 @@ class chromosomes:
     # mate the parameter set with that of another chromosomes
     def mate(self, another):
         new_parameters = list(self.parameters) # copy
-        for i in xrange(0, self.number_of_parameters):
+        for i in range(0, self.number_of_parameters):
             if random.randint(0, 1) == 1:
                 new_parameters[i] = another.parameters[i]
         # return a new evaluated chromosomes
@@ -132,7 +132,7 @@ class chromosomes:
     def mutate(self, num_mutation):
         global MUTATION_RANGE
         new_parameters = list(self.parameters) # copy
-        for c in xrange(num_mutation):
+        for c in range(num_mutation):
             # decide a mutation point
             i = random.randint(0, self.number_of_parameters-1)
             (lower, upper, restriction) = self.limits[i]
@@ -189,9 +189,9 @@ class population:
     # breed chromosomes
     def breed(self):
         # breeds until the number of chromosomes reaches the max size
-        for i in xrange(len(self.pool), self.max_size):
+        for i in range(len(self.pool), self.max_size):
             if self.verbose:
-              print "Breeding chromosomes: "+str(i+1)+" / "+str(self.max_size)
+              print("Breeding chromosomes: "+str(i+1)+" / "+str(self.max_size))
             self.pool.append(chromosomes(self.limits, [], self.verbose))
 
     # revaluate the fitness of the chromosomes in the pool
@@ -208,7 +208,7 @@ class population:
         # check if each parameter is within its range
         for x in list(self.pool):
           flag = False
-          for i in xrange(len(x.parameters)):
+          for i in range(len(x.parameters)):
             (lower, upper, restriction) = self.limits[i]
             if restriction:
               if lower > x.parameters[i] or x.parameters[i] > upper:
@@ -230,13 +230,13 @@ class population:
         if len(self.pool) > size_limit:
           self.pool = self.pool[:size_limit]
         if self.verbose:
-          print "Survived: "+str(size)+" -> "+str(len(self.pool))+" / "+str(size)
+          print("Survived: "+str(size)+" -> "+str(len(self.pool))+" / "+str(size))
 
     # crossover
     def crossover(self):
         temp_pool = list(self.pool)
         num_crossover = int(len(temp_pool) * self.crossover_ratio)
-        for c in xrange(num_crossover):
+        for c in range(num_crossover):
           x = temp_pool[random.randint(0, len(temp_pool)-1)]
           temp_pool.remove(x)
           y = temp_pool[random.randint(0, len(temp_pool)-1)]
@@ -247,7 +247,7 @@ class population:
     def mate(self):
         temp_pool = list(self.pool)
         num_mate = int(len(temp_pool) * self.mate_ratio)
-        for c in xrange(num_mate):
+        for c in range(num_mate):
           x = temp_pool[random.randint(0, len(temp_pool)-1)]
           temp_pool.remove(x)
           y = temp_pool[random.randint(0, len(temp_pool)-1)]
@@ -258,7 +258,7 @@ class population:
     def mutate(self):
         temp_pool = list(self.pool)
         num_mutate = int(len(temp_pool) * self.mutate_ratio)
-        for c in xrange(num_mutate):
+        for c in range(num_mutate):
           x = temp_pool[random.randint(0, len(temp_pool)-1)]
           temp_pool.remove(x)
           self.pool.append(x.mutate(self.num_mutation_points))
@@ -266,17 +266,17 @@ class population:
     # evolve
     def evolve(self, num_generations):
         global NUM_BEST_PERFORMERS
-        for i in xrange(num_generations):
+        for i in range(num_generations):
           self.breed()
           self.crossover()
           self.mate()
           self.mutate()
           self.eliminate()
           if self.verbose:
-            print "--- ["+str(i+1)+"/"+str(num_generations)+"] current best performers ---"
+            print("--- ["+str(i+1)+"/"+str(num_generations)+"] current best performers ---")
             for j in self.get_top_performers(min(NUM_TOP_PERFORMERS, len(self.pool))):
-              print j
-          print "\n"
+              print(j)
+          print("\n")
         return self
 
     # get the summary performance of the chromosomes in the current pool
@@ -288,9 +288,9 @@ class population:
     def get_top_performers(self, num):
         result = []
         self.pool.sort(key = lambda x: x.fitness)
-        for i in xrange(min(num, len(self.pool))):
+        for i in range(min(num, len(self.pool))):
             result.append(self.pool[i]) #.copy())
-        return result;
+        return result
 
     # get string representation of the pool
     def __repr__(self):
@@ -300,12 +300,12 @@ class population:
 
 # get historical stock price data from yahoo finance
 def get_historical_data(ticker, start_date, end_date):
-    daily_data = web.get_data_yahoo(ticker, start=start_date, end=end_date)
+    daily_data = data.get_data_google(ticker, start=start_date, end=end_date)
     num_days = len(daily_data)
     timeseries = range(0, num_days)
-    values = [daily_data['Adj Close'][i] for i in xrange(num_days)]
+    values = [daily_data['Close'][i] for i in range(num_days)]
     datetimes = map(lambda tm: datetime.datetime(tm.year, tm.month, tm.day), daily_data.index.tolist())
-    return [timeseries, values, datetimes]
+    return [list(timeseries), list(values), list(datetimes)]
 
 # pick up the target data from the all historical data series
 def get_learning_data(all_data, learning_end_date, max_term):
@@ -376,10 +376,10 @@ def draw_single_step(p, all_data, learning_data):
     # plot the forecast part
     plt.scatter(timeseries_all[learning_end_pos:],
                 actual_values_all[learning_end_pos:], color='blue')
-    print "--- RESULT ---"
+    print("--- RESULT ---")
     c = 0
     for x in p.get_top_performers(NUM_TOP_PERFORMERS):
-      print str(x)
+      print(str(x))
       start_time = x.get_start_time()
       pos = learning_timeseries[start_time:][0]
       #ts = learning_timeseries[pos:]
@@ -410,9 +410,9 @@ def multi_steps(ticker, start_date, end_date, max_term, min_term, prediction_ter
       p = execute(generations, ga_parameters, verbose=verbose) #, initial_p=False)
       # record results
       results.append((TIMESERIES[-1], p.get_top_performers(NUM_TOP_PERFORMERS)))
-      print "--- RESULT ---", DATETIMES[-1]
+      print("--- RESULT ---", DATETIMES[-1])
       for x in p.get_top_performers(NUM_TOP_PERFORMERS):
-        print str(x)
+        print(str(x))
     # draw chart
     draw_multi_steps(results, all_data, prediction_term)
 
@@ -432,7 +432,7 @@ def draw_multi_steps(results, all_data, prediction_term):
         r.append(x.estimate([pos+prediction_term]))
         # get and record the critical time
         ct = x.get_critical_time()
-        if critical_time.has_key(ct):
+        if ct in critical_time:
           critical_time[ct] += 1
         else:
           critical_time[ct] = 1
@@ -459,7 +459,7 @@ def draw_multi_steps(results, all_data, prediction_term):
       c += 1
     plt.show()
     # draw critical time distribution
-    print critical_time
+    print(critical_time)
     keys = critical_time.keys()
     keys.sort()
     vs = []
@@ -473,7 +473,7 @@ MAX_ERROR = 10.0
 MUTATION_RANGE = 0.2
 NUM_TOP_PERFORMERS = 10
 
-ticker = '^VIX'
+ticker = 'AAPL'
 start_date = datetime.datetime(2014, 7, 1)
 end_date = datetime.datetime(2015, 4, 3)
 learning_end_date = datetime.datetime(2014, 4, 3)
