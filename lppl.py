@@ -461,7 +461,7 @@ def draw_multi_steps(results, all_data, prediction_term):
     # draw critical time distribution
     print(critical_time)
     keys = critical_time.keys()
-    keys.sort()
+    keys = sorted(keys)
     vs = []
     for k in keys:
       vs.append(critical_time[k])
